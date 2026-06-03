@@ -39,7 +39,7 @@ RUN mkdir -p data logs services/cache/search
 # update them) silently fails on EPERM, breaking skill extraction,
 # prefs persistence, mail attachments, etc.
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r//' /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 7000
 
