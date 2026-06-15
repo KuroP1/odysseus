@@ -22,6 +22,7 @@ import censorModule from './js/censor.js';
 import galleryModule from './js/gallery.js';
 import tasksModule from './js/tasks.js';
 import calendarModule from './js/calendar.js';
+import chatroomModule from './js/chatroom.js';
 import notesModule from './js/notes.js';
 import adminModule from './js/admin.js';
 import settingsModule from './js/settings.js';
@@ -901,6 +902,21 @@ function initializeEventListeners() {
       if (!Modals.toggle('calendar-modal')) {
         if (calendarModule.isCalendarOpen()) calendarModule.closeCalendar();
         else calendarModule.openCalendar();
+      }
+    });
+  }
+
+  // Chat Room tool button
+  const toolChatroomBtn = el('tool-chatroom-btn');
+  if (toolChatroomBtn) {
+    toolChatroomBtn.addEventListener('click', async () => {
+      if (!chatroomModule) return;
+      const Modals = await import('./js/modalManager.js');
+      // toggle returns true when a registered modal was minimized/restored;
+      // returns false when nothing is registered → open fresh.
+      if (!Modals.toggle('chatroom-modal')) {
+        if (chatroomModule.isChatRoomOpen()) chatroomModule.closeChatRoom();
+        else chatroomModule.openChatRoom();
       }
     });
   }
@@ -2387,6 +2403,7 @@ function initializeEventListeners() {
     // Per-tool visibility — fine-grained control over which entries show
     // inside the Tools section in the sidebar.
     'tool-calendar':       '#tool-calendar-btn',
+    'tool-chatroom':       '#tool-chatroom-btn',
     'tool-compare':        '#tool-compare-btn',
     'tool-cookbook':       '#tool-cookbook-btn',
     'tool-research':       '#tool-research-btn',
@@ -3454,6 +3471,7 @@ function startOdysseusApp() {
     'rail-gallery':   'tool-gallery-btn',
     'rail-tasks':     'tool-tasks-btn',
     'rail-calendar':  'tool-calendar-btn',
+    'rail-chatroom':  'tool-chatroom-btn',
     'rail-notes':     'tool-notes-btn',
     'rail-memory':    'tool-memory-btn',
     'rail-theme':     'tool-theme-btn',

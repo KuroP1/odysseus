@@ -1,5 +1,9 @@
 fastapi
 uvicorn
+# WebSocket protocol support for uvicorn (Chat Room tool uses a /ws/* route).
+# Plain `uvicorn` ships no WS implementation, so without this every WebSocket
+# upgrade is rejected and the client hangs at "connecting".
+websockets
 python-multipart
 python-dotenv
 httpx

@@ -629,6 +629,10 @@ app.include_router(setup_assistant_routes(task_scheduler))
 from routes.calendar_routes import setup_calendar_routes
 app.include_router(setup_calendar_routes())
 
+# Chat Room (human-only real-time group chat over WebSocket; in-memory only)
+from routes.chatroom_routes import setup_chatroom_routes
+app.include_router(setup_chatroom_routes())
+
 # Shell (user-facing command execution)
 from routes.shell_routes import setup_shell_routes
 app.include_router(setup_shell_routes())
