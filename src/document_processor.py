@@ -108,6 +108,15 @@ def _process_text_file(path: str) -> str:
         return result
 
 
+def _sniff_pdf(path: str) -> bool:
+    """Returns True if the file starts with the PDF magic bytes %PDF-"""
+    try:
+        with open(path, "rb") as f:
+            return f.read(5) == b"%PDF-"
+    except Exception:
+        return False
+
+
 def _process_pdf(path: str) -> str:
     """Process PDF file with text extraction (pypdf). Uses VL model for image-heavy pages."""
     try:
@@ -385,6 +394,7 @@ def build_user_content(
         _, ext = os.path.splitext(path.lower())
         mime = upload_info.get("mime") or mimetypes.guess_type(path)[0] or "application/octet-stream"
         display_name = upload_info.get("name") or upload_info.get("original_name") or path
+        is_pdf_by_magic = _sniff_pdf(path)
 
         if upload_handler.is_image_file(display_name, mime):
             try:
@@ -418,8 +428,8 @@ def build_user_content(
                 else:
                     content.insert(0, {"type": "text", "text": "[Audio attached but could not be processed]"})
 
-        elif upload_handler.is_document_file(display_name, mime):
-            if mime == "application/pdf":
+        elif upload_handler.is_document_file(display_name, mime) or is_pdf_by_magic:
+            if mime == "application/pdf" or is_pdf_by_magic:
                 extracted_text = None
                 if session_id:
                     try:

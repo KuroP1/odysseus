@@ -186,9 +186,12 @@ function _initModelPickerDropdown() {
       const probeResult = item.endpoint_id ? _localProbe[item.endpoint_id] : null;
       const isLocalDead = !!(probeResult && probeResult.alive === false);
       allModels.forEach((mid, i) => {
-        // Deduplicate by model ID — prefer DB endpoints over env-discovered
-        if (seen.has(mid)) return;
-        seen.add(mid);
+        // Deduplicate by endpoint + model ID, so the same model offered by
+        // different endpoints (e.g. claude-opus-4-8 on both Anthropic and the
+        // Local proxy) each stays visible instead of the second being dropped.
+        const key = (item.endpoint_id || item.url || '') + '::' + mid;
+        if (seen.has(key)) return;
+        seen.add(key);
         result.push({
           mid,
           display: (allDisplay[i] || mid).split('/').pop(),

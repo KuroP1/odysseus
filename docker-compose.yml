@@ -66,6 +66,22 @@ services:
     network_mode: "service:gluetun"
     restart: unless-stopped
 
+  cliproxy:
+    # Logs in to your Claude account via OAuth and exposes an OpenAI-compatible
+    # API at :8317. Odysseus uses it instead of an Anthropic API key.
+    image: eceasy/cli-proxy-api:latest
+    container_name: cliproxy
+    volumes:
+      - ./config/cliproxy/config.yaml:/CLIProxyAPI/config.yaml:ro,z
+      - ./data/cliproxy:/root/.cli-proxy-api:z
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    # Share gluetun's namespace: outbound Claude calls go through the VPN, and
+    # Odysseus (also in this namespace) reaches the proxy at localhost:8317.
+    network_mode: "service:gluetun"
+    restart: unless-stopped
+
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
@@ -92,9 +108,11 @@ services:
       - OPENVPN_PASSWORD=${SURFSHARK_PASSWORD}
       # Change this to find a non-flagged exit IP (e.g. Japan, Singapore).
       - SERVER_COUNTRIES=${SURFSHARK_COUNTRY:-Taiwan}
-      - FIREWALL_INPUT_PORTS=7000
+      - FIREWALL_INPUT_PORTS=7000,8317,54545
     ports:
       - "7000:7000"            # odysseus app (now in gluetun's namespace)
+      - "127.0.0.1:8317:8317"  # cliproxy (host-only: for login + curl tests)
+      - "127.0.0.1:54545:54545" # cliproxy Claude OAuth callback (login only)
       - "8888:8888"            # HTTP proxy (only active if HTTPPROXY=on)
       - "127.0.0.1:8080:8080"  # searxng
     networks:

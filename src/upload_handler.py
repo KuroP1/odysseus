@@ -149,7 +149,17 @@ class UploadHandler:
             _, ext = os.path.splitext(original_filename.lower())
             if ext:
                 content_type = mimetypes.guess_type(original_filename)[0] or content_type
-        
+
+        # Magic-byte fallback: detect PDF regardless of extension or MIME
+        if content_type == "application/octet-stream":
+            try:
+                file_obj.seek(0)
+                if file_obj.read(5) == b"%PDF-":
+                    content_type = "application/pdf"
+                file_obj.seek(0)
+            except Exception:
+                pass
+
         return content_type
         
     def is_image_file(self, filename: str, content_type: str = None) -> bool:

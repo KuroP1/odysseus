@@ -1,0 +1,37 @@
+# CLIProxyAPI config for use with Odysseus.
+#
+# This proxy logs in to your Claude account via OAuth (your Claude Code
+# subscription) and exposes an OpenAI-compatible API at :8317. Odysseus then
+# talks to it as a normal endpoint — no Anthropic API key lives in Odysseus.
+#
+# The proxy runs inside gluetun's network namespace (see docker-compose.yml),
+# so its calls to Anthropic go out through the same Surfshark VPN that already
+# carries Odysseus traffic.
+
+# Port the proxy listens on (inside the gluetun namespace).
+port: 8317
+
+# Where the OAuth tokens for your Claude login are stored. This path is a
+# bind-mounted volume (./data/cliproxy) so the login survives container
+# recreates — you only log in once.
+auth-dir: "/root/.cli-proxy-api"
+
+# Local API key(s) that CLIProxyAPI requires from its clients. This is NOT an
+# Anthropic key — it's a shared secret between Odysseus and the proxy. Change
+# this value, then use the same string as the endpoint's API key in Odysseus.
+api-keys:
+  - "Proxykeyjai"
+
+# Strip the `temperature` parameter for Claude Opus 4.7 / 4.8. Anthropic
+# rejects `temperature` for these two models ("`temperature` is deprecated for
+# this model."), but Odysseus sends it. This filter removes the param from the
+# payload before it is forwarded upstream, so those models work normally.
+# (No `protocol` is set, so the rule applies regardless of the client API
+# format — `temperature` is a top-level field in both OpenAI and Claude payloads.)
+payload:
+  filter:
+    - models:
+        - name: "claude-opus-4-8*"
+        - name: "claude-opus-4-7*"
+      params:
+        - "temperature"
